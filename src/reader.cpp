@@ -12,12 +12,14 @@ Reader::Reader(OrderCounter& counter, int readerNumber)
 
 void Reader::queryOrder(int orderNumber) {
 
+    sem_wait(counter.getServiceQueueLock());
     sem_wait(counter.getReadLock());
     counter.getReaderCount()++;
     if (counter.getReaderCount() == 1) {
         sem_wait(counter.getWriteLock());
     }
     sem_post(counter.getReadLock());
+    sem_post(counter.getServiceQueueLock());
 
     {
         std::lock_guard<std::mutex> lock(coutMutex);
@@ -26,7 +28,7 @@ void Reader::queryOrder(int orderNumber) {
         std::cout << std::put_time(std::localtime(&now_c), "%T") << " Reader " << readerNumber << " is reading order " << orderNumber << std::endl;
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 
     bool isPrepared = orderNumber <= counter.getLatestOrder();
     {

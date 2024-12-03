@@ -15,6 +15,7 @@ class OrderCounter {
         int getLatestOrder() const;
         void incrementOrder();
     
+        sem_t* getServiceQueueLock() { return &serviceQueue; }
         sem_t* getReadLock() { return &readLock; }
         sem_t* getWriteLock() { return &writeLock; }
         std::atomic<int>& getReaderCount() { return readerCount; }
@@ -22,6 +23,7 @@ class OrderCounter {
     private:
         std::atomic<int> latestOrder;
         std::atomic<int> readerCount;
+        sem_t serviceQueue;
         sem_t readLock;
         sem_t writeLock;
 };
